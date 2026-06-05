@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+name: your-app
+namespace: default
+labels:
+app: your-app
+managed-by: stellaksh-digital
+spec:
+replicas: 3
+selector:
+matchLabels:
+app: your-app
+strategy:
+type: RollingUpdate
+rollingUpdate:
+maxSurge: 1
+maxUnavailable: 0
+template:
+metadata:
+labels:
+app: your-app
+spec:
+containers:
+- name: your-app
+image: gcr.io/PROJECT_ID/your-app:latest
+ports:
+- containerPort: 8080
+resources:
+requests:
+cpu: "250m"
+memory: "256Mi"
+limits:
+cpu: "500m"
+memory: "512Mi"
+readinessProbe:
+httpGet:
+path: /health
+port: 8080
+initialDelaySeconds: 10
+periodSeconds: 5
+livenessProbe:
+httpGet:
+path: /health
+port: 8080
+initialDelaySeconds: 30
+periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+name: your-app-svc
+spec:
+selector:
+app: your-app
+ports:
+- port: 80
+targetPort: 8080
+type: LoadBalancer
